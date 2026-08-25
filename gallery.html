@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ไฟล์ของฉัน</title>
+<style>
+  /* ========================================================
+     ตัวแปรสี / ธีม (โหมดสว่าง และ โหมดมืด)
+     ======================================================== */
+  :root{
+    --bg:#F5F6FA;
+    --card:#FFFFFF;
+    --text:#17202A;
+    --text-soft:#7A869A;
+    --border:#EAECF1;
+    --accent:#00B894;
+    --accent-soft:#E5F9F3;
+    --shadow:0 2px 10px rgba(23,32,42,0.06);
+    --img-color:#4C8DFF;
+    --video-color:#FF5A6E;
+    --file-color:#FF8A3D;
+    --audio-color:#8B5CF6;
+  }
+  [data-theme="dark"]{
+    --bg:#0F1115;
+    --card:#181B21;
+    --text:#F2F4F7;
+    --text-soft:#8A94A6;
+    --border:#262A32;
+    --accent-soft:#123A31;
+    --shadow:0 2px 14px rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Sarabun","Noto Sans Thai","Segoe UI",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .2s,color .2s;
+  }
+  .app{
+    max-width:720px;
+    margin:0 auto;
+    min-height:100vh;
+    padding-bottom:90px;
+  }
+
+  /* ========================================================
+     หัวหน้าเว็บ + ช่องค้นหา
+     ======================================================== */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--bg);
+    padding:18px 16px 10px;
+  }
+  .topbar h1{
+    font-size:22px;
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .theme-btn{
+    border:none;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    width:38px;height:38px;
+    border-radius:12px;
+    color:var(--text);
+    font-size:16px;
+    cursor:pointer;
+  }
+  .search-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px 14px;
+    box-shadow:var(--shadow);
+  }
+  .search-box input{
+    border:none;
+    outline:none;
+    background:transparent;
+    color:var(--text);
+    font-size:15px;
+    width:100%;
+    font-family:inherit;
+  }
+  .search-box svg{flex:none;color:var(--text-soft);}
+
+  /* ========================================================
+     แท็บหมวดหมู่ (ทั้งหมด / รูปภาพ / วิดีโอ / เอกสาร / เสียง)
+     ======================================================== */
+  .categories{
+    display:flex;
+    gap:10px;
+    padding:14px 16px 4px;
+    overflow-x:auto;
+  }
+  .cat-btn{
+    flex:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    border:none;
+    background:transparent;
+    cursor:pointer;
+    color:var(--text-soft);
+    font-family:inherit;
+    font-size:12px;
+    width:64px;
+  }
+  .cat-icon{
+    width:48px;height:48px;
+    border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    color:#fff;
+    font-size:20px;
+    transition:transform .15s;
+  }
+  .cat-btn.active .cat-icon{ transform:translateY(-2px); }
+  .cat-btn.active{ color:var(--text); font-weight:700; }
+  .cat-btn[data-type="all"] .cat-icon{ background:var(--text); }
+  .cat-btn[data-type="image"] .cat-icon{ background:var(--img-color); }
+  .cat-btn[data-type="video"] .cat-icon{ background:var(--video-color); }
+  .cat-btn[data-type="file"] .cat-icon{ background:var(--file-color); }
+  .cat-btn[data-type="audio"] .cat-icon{ background:var(--audio-color); }
+
+  /* แถบตัวเรียงลำดับ */
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 16px 4px;
+    font-size:13px;
+    color:var(--text-soft);
+  }
+  .toolbar select{
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    border-radius:10px;
+    padding:6px 10px;
+    font-family:inherit;
+    font-size:13px;
+  }
+
+  /* ========================================================
+     กลุ่มไฟล์ตามวันที่
+     ======================================================== */
+  .date-section{ padding:14px 16px 0; }
+  .date-title{
+    font-size:14px;
+    font-weight:700;
+    color:var(--text-soft);
+    margin-bottom:10px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  .grid-item{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .grid-item img{ width:100%;height:100%;object-fit:cover; display:block; }
+  .grid-item .play-badge{
+    position:absolute; inset:0;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.15);
+  }
+  .grid-item .play-badge span{
+    width:32px;height:32px;border-radius:50%;
+    background:rgba(0,0,0,0.55);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+  }
+
+  .list-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--card);
+    border-radius:14px;
+    padding:12px;
+    box-shadow:var(--shadow);
+    margin-bottom:8px;
+    cursor:pointer;
+  }
+  .list-icon{
+    width:42px;height:42px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:18px;flex:none;
+  }
+  .list-icon.file{ background:var(--file-color); }
+  .list-icon.audio{ background:var(--audio-color); }
+  .list-meta{ min-width:0; flex:1; }
+  .list-meta .name{
+    font-size:14px;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .list-meta .sub{ font-size:12px;color:var(--text-soft); margin-top:2px; }
+
+  /* สถานะว่าง / กำลังโหลด */
+  .empty, .loading-more{
+    text-align:center;
+    color:var(--text-soft);
+    font-size:13px;
+    padding:30px 10px;
+  }
+  .skeleton{
+    background:linear-gradient(90deg,var(--border) 25%,var(--card) 37%,var(--border) 63%);
+    background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite;
+    border-radius:12px;
+  }
+  @keyframes shimmer{ 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+
+  .load-more-btn{
+    display:block;
+    margin:16px auto 0;
+    padding:10px 22px;
+    border-radius:20px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    font-family:inherit;
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  /* ========================================================
+     ปุ่มลอย (FAB) รีเฟรช
+     ======================================================== */
+  .fab{
+    position:fixed;
+    right:20px; bottom:20px;
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    box-shadow:0 6px 16px rgba(0,184,148,0.4);
+    font-size:20px;
+    cursor:pointer;
+    z-index:30;
+  }
+
+  /* ========================================================
+     Modal ดูไฟล์ (รูป / วิดีโอ / เสียง / เอกสาร)
+     ======================================================== */
+  .viewer{
+    position:fixed; inset:0;
+    background:rgba(10,12,16,0.94);
+    display:none;
+    flex-direction:column;
+    z-index:100;
+  }
+  .viewer.open{ display:flex; }
+  .viewer-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px;
+    color:#fff;
+  }
+  .viewer-head .name{
+    font-size:14px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    max-width:70%;
+  }
+  .viewer-head button{
+    background:rgba(255,255,255,0.12);
+    border:none;color:#fff;
+    width:34px;height:34px;border-radius:10px;
+    font-size:16px;cursor:pointer;
+  }
+  .viewer-body{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .viewer-body img{ max-width:100%; max-height:100%; object-fit:contain; touch-action:pan-y; }
+  .viewer-body iframe{ width:100%; height:100%; border:none; background:#000; }
+  .nav-arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:rgba(255,255,255,0.12);
+    border:none; color:#fff;
+    width:40px;height:40px;border-radius:50%;
+    font-size:18px; cursor:pointer;
+  }
+  .nav-arrow.prev{ left:10px; }
+  .nav-arrow.next{ right:10px; }
+  .viewer-foot{
+    padding:14px 16px 22px;
+    text-align:center;
+  }
+  .viewer-foot a{
+    color:#fff;
+    font-size:13px;
+    text-decoration:none;
+    opacity:.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- แถบบนสุด: ชื่อหน้า + ปุ่มโหมดสว่าง/มืด + ช่องค้นหา -->
+  <div class="topbar">
+    <h1>
+      ไฟล์ของฉัน
+      <button class="theme-btn" id="themeBtn" title="สลับโหมดสว่าง/มืด">🌙</button>
+    </h1>
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="ค้นหาชื่อไฟล์ / โฟลเดอร์...">
+    </div>
+  </div>
+
+  <!-- แท็บหมวดหมู่ไฟล์ -->
+  <div class="categories" id="categoryTabs">
+    <button class="cat-btn active" data-type="all">
+      <span class="cat-icon">▦</span> ทั้งหมด
+    </button>
+    <button class="cat-btn" data-type="image">
+      <span class="cat-icon">🖼</span> รูปภาพ
+    </button>
+    <button class="cat-btn" data-type="video">
+      <span class="cat-icon">▶</span> วิดีโอ
+    </button>
+    <button class="cat-btn" data-type="file">
+      <span class="cat-icon">📄</span> เอกสาร
+    </button>
+    <button class="cat-btn" data-type="audio">
+      <span class="cat-icon">♪</span> เสียง
+    </button>
+  </div>
+
+  <!-- แถบเรียงลำดับ + จำนวนไฟล์ที่พบ -->
+  <div class="toolbar" id="dateFilterBar" style="display:none;">
+    <span>กำลังกรองไฟล์ของวันที่ที่เลือกไว้</span>
+    <button class="load-more-btn" id="clearDateFilterBtn" style="margin:0;padding:4px 12px;">ล้างตัวกรอง</button>
+  </div>
+
+  <div class="toolbar">
+    <span id="resultCount">กำลังโหลด...</span>
+    <select id="sortSelect">
+      <option value="date_desc">ล่าสุดก่อน</option>
+      <option value="date_asc">เก่าสุดก่อน</option>
+      <option value="name_asc">ชื่อ ก-ฮ</option>
+    </select>
+  </div>
+
+  <!-- เนื้อหาไฟล์ทั้งหมด (แบ่งกลุ่มตามวันที่) -->
+  <div id="content"></div>
+
+  <div class="empty" id="emptyState" style="display:none;">ไม่พบไฟล์ที่ค้นหา</div>
+
+  <button class="load-more-btn" id="loadMoreBtn" style="display:none;">โหลดเพิ่มเติม</button>
+
+</div>
+
+<!-- ปุ่มลอยสำหรับรีเฟรชข้อมูล -->
+<button class="fab" id="refreshFab" title="โหลดข้อมูลใหม่">⟳</button>
+
+<!-- หน้าต่างดูไฟล์แบบเต็มจอ (รองรับปัดซ้าย-ขวาเปลี่ยนไฟล์) -->
+<div class="viewer" id="viewer">
+  <div class="viewer-head">
+    <span class="name" id="viewerName"></span>
+    <button id="viewerClose">✕</button>
+  </div>
+  <div class="viewer-body" id="viewerBody">
+    <button class="nav-arrow prev" id="viewerPrev">‹</button>
+    <button class="nav-arrow next" id="viewerNext">›</button>
+  </div>
+  <div class="viewer-foot">
+    <a id="viewerOpenLink" href="#" target="_blank" rel="noopener">เปิดไฟล์ต้นฉบับ / ดาวน์โหลด</a>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ตั้งค่าหลัก
+   ให้นำ URL ของ Google Apps Script Web App (จากขั้นตอน Deploy)
+   มาแปะแทนที่ตรงนี้
+   ============================================================ */
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxcDSpvLpcG3JzGgwHkR3mrwfdlSAOQ1oidW6W4owuD4M1FCXh9ti0caI6kbxKiiAXa/exec";
+
+/* ============================================================
+   ตัวแปรสถานะของหน้าเว็บ
+   ============================================================ */
+const state = {
+  type: "all",       // หมวดหมู่ที่เลือกอยู่
+  query: "",         // คำค้นหา
+  dateFilter: "",    // กรองเฉพาะวันที่ (มาจากลิงก์ใน Flex Message เช่น ?date=2026-08-25)
+  sort: "date_desc",
+  offset: 0,
+  limit: 60,
+  files: [],         // ไฟล์ทั้งหมดที่โหลดมาแล้ว (สะสมไว้ทำ "โหลดเพิ่ม")
+  total: 0,
+  loading: false
+};
+
+const el = (id) => document.getElementById(id);
+
+/* ============================================================
+   โหมดสว่าง / มืด (จำค่าไว้ใน localStorage)
+   ============================================================ */
+function initTheme(){
+  const saved = localStorage.getItem("gallery_theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+  el("themeBtn").textContent = saved === "dark" ? "☀" : "🌙";
+}
+el("themeBtn").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", cur);
+  localStorage.setItem("gallery_theme", cur);
+  el("themeBtn").textContent = cur === "dark" ? "☀" : "🌙";
+});
+initTheme();
+
+/* ============================================================
+   เรียกข้อมูลจาก Google Apps Script แบบ JSONP
+   (เลี่ยงปัญหา CORS เวลาเว็บกับ Apps Script อยู่คนละโดเมนกัน)
+   ============================================================ */
+function fetchFilesJSONP(params){
+  return new Promise((resolve, reject) => {
+
+    const cbName = "galleryCb_" + Date.now();
+    window[cbName] = (data) => {
+      resolve(data);
+      delete window[cbName];
+      script.remove();
+    };
+
+    const query = new URLSearchParams(Object.assign({ callback: cbName }, params));
+    const script = document.createElement("script");
+    script.src = GAS_API_URL + "?" + query.toString();
+    script.onerror = () => reject(new Error("โหลดข้อมูลไม่สำเร็จ"));
+    document.body.appendChild(script);
+
+  });
+}
+
+/* ============================================================
+   โหลดรายการไฟล์ (reset = true คือเริ่มค้นหาใหม่ตั้งแต่หน้าแรก)
+   ============================================================ */
+async function loadFiles(reset){
+
+  if (state.loading) return;
+  state.loading = true;
+
+  if (reset){
+    state.offset = 0;
+    state.files = [];
+    el("content").innerHTML = renderSkeleton();
+    el("emptyState").style.display = "none";
+  }
+
+  try{
+
+    const data = await fetchFilesJSONP({
+      type: state.type,
+      q: state.query,
+      date: state.dateFilter,
+      sort: state.sort,
+      limit: state.limit,
+      offset: state.offset
+    });
+
+    if (!data || data.ok !== true){
+      throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    }
+
+    state.files = state.files.concat(data.files);
+    state.total = data.total;
+    state.offset += data.files.length;
+
+    renderFiles();
+
+  }catch(err){
+    el("content").innerHTML = "";
+    el("emptyState").style.display = "block";
+    el("emptyState").textContent = "โหลดข้อมูลไม่สำเร็จ: " + err.message;
+  }finally{
+    state.loading = false;
+  }
+
+}
+
+/* ============================================================
+   สร้าง Skeleton ระหว่างรอโหลดข้อมูลครั้งแรก
+   ============================================================ */
+function renderSkeleton(){
+  let html = '<div class="date-section"><div class="grid">';
+  for (let i=0;i<9;i++) html += '<div class="grid-item skeleton"></div>';
+  html += '</div></div>';
+  return html;
+}
+
+/* ============================================================
+   จัดกลุ่มไฟล์ตามวันที่ แล้ววาดผลลัพธ์ทั้งหมด
+   ============================================================ */
+function renderFiles(){
+
+  el("resultCount").textContent = "พบทั้งหมด " + state.total + " ไฟล์";
+
+  if (state.files.length === 0){
+    el("content").innerHTML = "";
+    el("emptyState").style.display = "block";
+    el("loadMoreBtn").style.display = "none";
+    return;
+  }
+
+  el("emptyState").style.display = "none";
+
+  // จัดกลุ่มตาม dateFolder (ถ้าไม่มีให้ใช้วันที่จาก createdText แทน)
+  const groups = {};
+  const order = [];
+
+  state.files.forEach((f) => {
+    const key = f.dateFolder || (f.createdText || "").split(" ")[0];
+    if (!groups[key]){
+      groups[key] = [];
+      order.push(key);
+    }
+    groups[key].push(f);
+  });
+
+  let html = "";
+
+  order.forEach((key) => {
+
+    const items = groups[key];
+    html += '<div class="date-section"><div class="date-title">' + toThaiDateLabel(key) + '</div>';
+
+    // แสดงเป็นกริดรูปภาพ ถ้าไฟล์ในกลุ่มนี้ส่วนใหญ่เป็นรูป/วิดีโอ
+    const mediaCount = items.filter(f => f.type === "image" || f.type === "video").length;
+
+    if (mediaCount === items.length){
+      html += '<div class="grid">';
+      items.forEach(f => { html += renderGridItem(f); });
+      html += '</div>';
+    } else {
+      items.forEach(f => { html += renderListRow(f); });
+    }
+
+    html += '</div>';
+
+  });
+
+  el("content").innerHTML = html;
+
+  // ผูก event ให้ทุกไฟล์ที่แสดงผล กดแล้วเปิดหน้าต่างดูไฟล์
+  document.querySelectorAll("[data-file-id]").forEach((node) => {
+    node.addEventListener("click", () => openViewer(node.getAttribute("data-file-id")));
+  });
+
+  el("loadMoreBtn").style.display = state.offset < state.total ? "block" : "none";
+
+}
+
+/* แปลงชื่อโฟลเดอร์วันที่ (2026-08-25) ให้เป็นภาษาไทยอ่านง่าย */
+function toThaiDateLabel(dateStr){
+
+  const months = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+                  "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+
+  const parts = (dateStr || "").split("-");
+  if (parts.length !== 3) return dateStr || "ไม่ทราบวันที่";
+
+  const y = parseInt(parts[0], 10) + 543; // แปลงเป็น พ.ศ.
+  const m = parseInt(parts[1], 10) - 1;
+  const d = parseInt(parts[2], 10);
+
+  if (isNaN(y) || isNaN(d) || !months[m]) return dateStr;
+
+  return d + " " + months[m] + " " + y;
+
+}
+
+function renderGridItem(f){
+  const badge = f.type === "video" ? '<div class="play-badge"><span>▶</span></div>' : "";
+  return '<div class="grid-item" data-file-id="' + f.id + '">' +
+           '<img loading="lazy" src="' + f.thumbUrl + '" alt="' + escapeHtml(f.name) + '">' +
+           badge +
+         '</div>';
+}
+
+function renderListRow(f){
+  const iconClass = f.type === "audio" ? "audio" : "file";
+  const iconChar = f.type === "audio" ? "♪" : "📄";
+  return '<div class="list-row" data-file-id="' + f.id + '">' +
+           '<div class="list-icon ' + iconClass + '">' + iconChar + '</div>' +
+           '<div class="list-meta">' +
+             '<div class="name">' + escapeHtml(f.name) + '</div>' +
+             '<div class="sub">' + f.sizeText + ' · ' + f.createdText + '</div>' +
+           '</div>' +
+         '</div>';
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+/* ============================================================
+   หน้าต่างดูไฟล์แบบเต็มจอ (รูป / วิดีโอ / เสียง / เอกสาร)
+   ============================================================ */
+let viewerIndex = -1;
+
+function openViewer(fileId){
+  viewerIndex = state.files.findIndex(f => f.id === fileId);
+  if (viewerIndex === -1) return;
+  showViewerItem();
+  el("viewer").classList.add("open");
+}
+
+function closeViewer(){
+  el("viewer").classList.remove("open");
+  el("viewerBody").querySelectorAll("iframe,img").forEach(n => n.remove());
+}
+
+function showViewerItem(){
+
+  const f = state.files[viewerIndex];
+  if (!f) return;
+
+  el("viewerName").textContent = f.name;
+  el("viewerOpenLink").href = f.openUrl;
+
+  const body = el("viewerBody");
+  body.querySelectorAll("iframe,img").forEach(n => n.remove());
+
+  let node;
+  if (f.type === "image"){
+    node = document.createElement("img");
+    node.src = "https://lh3.googleusercontent.com/d/" + f.id + "=w1600";
+  } else {
+    // วิดีโอ / เสียง / เอกสาร (PDF ฯลฯ) ใช้ตัวแสดงตัวอย่างของ Google Drive
+    node = document.createElement("iframe");
+    node.src = f.viewUrl;
+    node.setAttribute("allow", "autoplay");
+  }
+
+  body.insertBefore(node, el("viewerPrev"));
+
+}
+
+el("viewerClose").addEventListener("click", closeViewer);
+el("viewerPrev").addEventListener("click", () => {
+  if (viewerIndex > 0){ viewerIndex--; showViewerItem(); }
+});
+el("viewerNext").addEventListener("click", () => {
+  if (viewerIndex < state.files.length - 1){ viewerIndex++; showViewerItem(); }
+});
+
+/* รองรับปัดซ้าย-ขวา (Swipe) บนจอสัมผัส เพื่อเปลี่ยนไฟล์ */
+let touchStartX = 0;
+el("viewerBody").addEventListener("touchstart", (e) => { touchStartX = e.touches[0].clientX; });
+el("viewerBody").addEventListener("touchend", (e) => {
+  const diff = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(diff) < 50) return;
+  if (diff > 0) el("viewerPrev").click(); else el("viewerNext").click();
+});
+
+/* ============================================================
+   ผูก Event ต่าง ๆ ของหน้าจอหลัก
+   ============================================================ */
+
+// สลับหมวดหมู่ไฟล์
+el("categoryTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cat-btn");
+  if (!btn) return;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  state.type = btn.getAttribute("data-type");
+  loadFiles(true);
+});
+
+// ค้นหา (หน่วงเวลาเล็กน้อยกันยิง API ถี่เกินไป)
+let searchTimer = null;
+el("searchInput").addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.query = e.target.value.trim();
+    loadFiles(true);
+  }, 350);
+});
+
+// เรียงลำดับ
+el("sortSelect").addEventListener("change", (e) => {
+  state.sort = e.target.value;
+  loadFiles(true);
+});
+
+// โหลดเพิ่มเติม
+el("loadMoreBtn").addEventListener("click", () => loadFiles(false));
+
+// ปุ่มลอย: รีเฟรชข้อมูลใหม่ทั้งหมด
+el("refreshFab").addEventListener("click", () => loadFiles(true));
+
+/* ============================================================
+   เริ่มทำงาน: อ่านค่าจาก URL (?date=YYYY-MM-DD) เผื่อมาจากปุ่มใน LINE
+   เพื่อกรองให้เห็นไฟล์ของวันที่ถูกส่งมาโดยอัตโนมัติ
+   ============================================================ */
+el("clearDateFilterBtn").addEventListener("click", () => {
+  state.dateFilter = "";
+  el("dateFilterBar").style.display = "none";
+  loadFiles(true);
+});
+
+(function init(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const dateParam = urlParams.get("date");
+  if (dateParam){
+    state.dateFilter = dateParam;
+    el("dateFilterBar").style.display = "flex";
+  }
+  loadFiles(true);
+})();
+</script>
+
+</body>
+</html>
